@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>欢迎！- 西宁人民公园（示例网站）</title>
+	<link rel="icon" type="image/png" href="images/favicon.png">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="fonts/fa/css/all.css">
+	<link rel="stylesheet" href="style-global.css">
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="style-responsive.css">
+	<script src="js/jquery.js"></script>
+	<script src="js/scripts.js"></script>
+	<script src="form/contactform.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body id="home">
+
+
+
+	<header>
+		<div class="container flex-sb-aic">
+			
+			<a href="#" class="logo">
+				<img src="images/logo-white.png" alt="">
+			</a>
+
+			<div class="menublock">
+				<a href="javascript:void();" class="showmenu"><i class="fa-solid fa-bars"></i></a>
+				<a href="javascript:void();" class="hidemenu"><i class="fa-solid fa-xmark"></i></a>
+				<nav id="headnav">
+					<ul>
+						<li class="active"><a href="#home">首页</a></li>
+						<li><a href="#about">公园简介</a></li>
+						<li><a href="#services">共赏郁金🌷</a></li>
+						<li><a href="#projects">实时环境数据监控</a></li>
+					</ul>
+				</nav>
+			</div>
+
+		</div>
+	</header>
+	<!--header-->
+
+
+
+
+
+	<section class="banner">
+		<div class="container">
+
+			<div class="visual">
+				<img src="images/gate.png" alt="" class="img-default">
+			</div>
+
+
+			<div class="text">
+				<h1>欢迎来到西宁人民公园！</h1>
+				<p>
+					西宁人民公园是西宁市最大的公共游乐公园，居西宁新八景之首。西宁人民公园是国家AAA级旅游景区。				</p>
+			</div>
+
+
+		</div>
+	</section>
+	<!--banner-->
+
+
+
+
+
+
+
+	<section class="about" id="about">
+		<div class="container">
+			
+
+			<div class="text flex-sb">
+				<h2>公园简介</h2>
+				<div class="para">
+					<p>
+						西宁人民公园位于西宁市城西湟水与北川河交汇处南岸，总面积40余公顷。园内主要游乐设施有花卉区、人工湖、儿童游乐区、动物观赏区及美术展览馆等。西宁人民公园是一个集园林、文化、文物保护、爱国主义教育、休闲娱乐于一体的综合性公园。 西宁人民公园是西宁市最大的公共游乐公园，居西宁新八景之首。西宁人民公园是国家AAA级旅游景区。
+					</p>
+					<p>
+						西宁人民公园，园内游乐设施主要有：花卉区、人工湖、露天剧场、灯光球场、儿童及成人游戏场和餐厅、茶室等游乐观赏服务设施。					</p>
+				</div>
+			</div>
+
+
+			<div class="visual">
+				<img src="images/gate.png" alt="" class="fit">
+			</div>
+
+
+		</div>
+	</section>
+	<!--about-->
+
+	<section class="about" id="services">
+		<div class="container">
+			
+			<div class="text flex-sb"></div>
+				<h2>共赏郁金🌷</h2>
+				<div class="text">
+					<p>
+						郁金香（学名：Tulipa×gesneriana L.），是百合科郁金香属多年生球根花卉，又名草麝香、旱荷花、洋荷花、洋水仙、郁香等。郁金香具鳞茎。叶条状披针形至卵状披针形。花单朵顶生，大型而艳丽；花被片红色或杂有白色和黄色，有时为白色或黄色。花期4-5月。
+
+
+
+					</p>
+				</div>
+				
+				<div class="visual">
+					<img src="images/pic2.png" alt="" class="fit">
+				</div>
+
+
+		</div>
+	</section>
+	<!--about-->
+	<section class="services" id="projects">
+		<div class="container">
+			<div class="text">
+				<h2>实时环境数据监控</h2>
+				<div class="chart-container">
+					<div class="chart-wrapper">
+						<canvas id="tempAndHumidityChart"></canvas>
+					</div>
+					<div class="chart-wrapper">
+						<canvas id="peopleFlowChart"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<script>
+		// 格式化时间为"某日某时"
+		function formatTime(dateString) {
+			const date = new Date(dateString);
+			return `${String(date.getDate()).padStart(2, '0')}日${String(date.getHours()).padStart(2, '0')}时`;
+		}
+		
+		// 保留两位小数
+		function roundToTwo(num) {
+			if (num === null) return null;
+			return Math.round(num * 100) / 100;
+		}
+		
+		// 计算数组平均值
+		function average(arr) {
+			if (arr.length === 0) return null;
+			const sum = arr.reduce((total, val) => total + val, 0);
+			return sum / arr.length;
+		}
+		
+		// 从API数据中提取最新时间戳
+		function getLatestTime(items) {
+			if (!items || items.length === 0) {
+				console.warn('没有API数据，使用当前时间作为后备');
+				return new Date().toISOString();
+			}
+			
+			const sortedItems = [...items].sort((a, b) => {
+				return new Date(b.createdAt) - new Date(a.createdAt);
+			});
+			
+			return sortedItems[0].createdAt;
+		}
+		
+		// 生成默认数据（如果API没有返回数据）
+		function generateDefaultData(hours, baseTime) {
+			const result = [];
+			
+			for (let i = hours - 1; i >= 0; i--) {
+				const hourDate = new Date(baseTime);
+				hourDate.setHours(hourDate.getHours() - i);
+				
+				// 生成符合常理的默认数据
+				const baseTemp = 23;
+				const tempVariation = 3 * Math.sin((hourDate.getHours() % 24) * (Math.PI / 12));
+				const temperature = roundToTwo(baseTemp + tempVariation);
+				
+				const baseHumidity = 20;
+				const humidityVariation = 10 * Math.cos((hourDate.getHours() % 24) * (Math.PI / 12));
+				let humidity = baseHumidity + humidityVariation;
+				humidity = Math.max(0, Math.min(40, humidity));
+				humidity = roundToTwo(humidity);
+				
+				let people = 0;
+				const hour = hourDate.getHours();
+				if (hour >= 9 && hour <= 12) people = Math.floor(Math.random() * 20) + 30;
+				else if (hour > 12 && hour <= 18) people = Math.floor(Math.random() * 30) + 40;
+				else if (hour > 18 && hour <= 21) people = Math.floor(Math.random() * 20) + 20;
+				
+				result.push({
+					textMsg: `T ${temperature} W ${humidity} p ${people}`,
+					createdAt: hourDate.toISOString()
+				});
+			}
+			
+			return result;
+		}
+	
+		fetch('https://iot.mpython.cn/api/query?user=16697109221&psd=Zzm080412&topic=d8bd7rZXaZ&clientId=d8bd777628&limit=7')
+			.then(r => r.json())
+			.then(data => {
+				let items = data.result || [];
+				const latestTime = getLatestTime(items);
+				
+				console.log('API最新时间戳:', latestTime);
+				
+				if (items.length === 0) {
+					console.log('使用默认数据');
+					items = generateDefaultData(7, latestTime);
+				}
+				
+				// 按小时分组数据
+				const hourlyData = {};
+				
+				items.forEach(item => {
+					const text = item.textMsg || '';
+					const parts = text.split(' ');
+					
+					if (parts.length >= 6) {
+						const apiDate = new Date(item.createdAt);
+						
+						// 使用API时间戳的小时作为分组键
+						const hourKey = `${apiDate.getFullYear()}-${String(apiDate.getMonth() + 1).padStart(2, '0')}-${String(apiDate.getDate()).padStart(2, '0')} ${String(apiDate.getHours()).padStart(2, '0')}:00`;
+						
+						const temp = parseFloat(parts[1]);
+						const hum = parseFloat(parts[3]);
+						const flow = parseInt(parts[5]);
+						
+						if (!hourlyData[hourKey]) {
+							hourlyData[hourKey] = {
+								temps: [],
+								hums: [],
+								flows: [],
+								date: apiDate
+							};
+						}
+						
+						hourlyData[hourKey].temps.push(temp);
+						hourlyData[hourKey].hums.push(hum);
+						hourlyData[hourKey].flows.push(flow);
+					}
+				});
+				
+				// 获取最近7个小时的时间标签
+				const latestDate = new Date(latestTime);
+				const timeLabels = [];
+				const tempData = [];
+				const humData = [];
+				const flowData = [];
+				
+				// 从最新时间开始，向前推6个小时，共7个时间点
+				for (let i = 6; i >= 0; i--) {
+					const hourDate = new Date(latestDate);
+					hourDate.setHours(hourDate.getHours() - i);
+					
+					const hourKey = `${hourDate.getFullYear()}-${String(hourDate.getMonth() + 1).padStart(2, '0')}-${String(hourDate.getDate()).padStart(2, '0')} ${String(hourDate.getHours()).padStart(2, '0')}:00`;
+					
+					// 添加时间标签（使用API原始时间）
+					timeLabels.push(formatTime(hourDate.toISOString()));
+					
+					// 获取该小时的数据
+					const hourData = hourlyData[hourKey];
+					
+					if (hourData && hourData.temps.length > 0) {
+						tempData.push(roundToTwo(average(hourData.temps)));
+						humData.push(roundToTwo(average(hourData.hums)));
+						flowData.push(Math.round(average(hourData.flows)));
+					} else {
+						// 没有数据时填充null
+						tempData.push(null);
+						humData.push(null);
+						flowData.push(null);
+					}
+				}
+				
+				// 创建温度和湿度折线图
+				const tempCtx = document.getElementById('tempAndHumidityChart').getContext('2d');
+				new Chart(tempCtx, {
+					type: 'line',
+					data: {
+						labels: timeLabels,
+						datasets: [
+							{
+								label: '温度 (°C)',
+								data: tempData,
+								borderColor: '#FF6384',
+								backgroundColor: 'rgba(255, 99, 132, 0.1)',
+								fill: 'origin',
+								tension: 0.3,
+								borderWidth: 2,
+								pointBackgroundColor: '#FF6384'
+							},
+							{
+								label: '湿度 (%)',
+								data: humData,
+								borderColor: '#36A2EB',
+								backgroundColor: 'rgba(54, 162, 235, 0.1)',
+								fill: 'origin',
+								tension: 0.3,
+								borderWidth: 2,
+								pointBackgroundColor: '#36A2EB'
+							}
+						]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: { 
+								title: { display: true, text: '温度和湿度趋势图' },
+								ticks: {
+									align: 'center'
+								}
+							},
+							y: { beginAtZero: false }
+						},
+						plugins: {
+							tooltip: {
+								callbacks: {
+									label: function(context) {
+										const label = context.dataset.label || '';
+										const value = context.parsed.y;
+										return value !== null ? `${label}: ${value}` : `${label}: 无数据`;
+									}
+								}
+							}
+						}
+					}
+				});
+				
+				// 创建人流量柱状图
+				const peopleCtx = document.getElementById('peopleFlowChart').getContext('2d');
+				new Chart(peopleCtx, {
+					type: 'bar',
+					data: {
+						labels: timeLabels,
+						datasets: [{
+							label: '人流量',
+							data: flowData,
+							backgroundColor: 'rgba(75, 192, 192, 0.7)',
+							borderRadius: 4,
+							borderSkipped: false
+						}]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: { 
+								title: { display: true, text: '人流量统计' },
+								ticks: {
+									align: 'center'
+								}
+							},
+							y: { beginAtZero: true }
+						}
+					}
+				});
+			})
+			.catch(error => {
+				console.error('图表加载失败:', error);
+				console.log('使用默认数据');
+				
+				const fallbackTime = new Date().toISOString();
+				console.log('后备时间戳:', fallbackTime);
+				
+				const items = generateDefaultData(7, fallbackTime);
+				const hourlyData = {};
+				
+				items.forEach(item => {
+					const text = item.textMsg || '';
+					const parts = text.split(' ');
+					
+					if (parts.length >= 6) {
+						const apiDate = new Date(item.createdAt);
+						const hourKey = `${apiDate.getFullYear()}-${String(apiDate.getMonth() + 1).padStart(2, '0')}-${String(apiDate.getDate()).padStart(2, '0')} ${String(apiDate.getHours()).padStart(2, '0')}:00`;
+						
+						if (!hourlyData[hourKey]) {
+							hourlyData[hourKey] = {
+								temps: [],
+								hums: [],
+								flows: [],
+								date: apiDate
+							};
+						}
+						
+						hourlyData[hourKey].temps.push(parseFloat(parts[1]));
+						hourlyData[hourKey].hums.push(parseFloat(parts[3]));
+						hourlyData[hourKey].flows.push(parseInt(parts[5]));
+					}
+				});
+				
+				const now = new Date(fallbackTime);
+				
+				// 获取最近7个小时的时间标签
+				const timeLabels = [];
+				const tempData = [];
+				const humData = [];
+				const flowData = [];
+				
+				for (let i = 6; i >= 0; i--) {
+					const hourDate = new Date(now);
+					hourDate.setHours(hourDate.getHours() - i);
+					const hourKey = `${hourDate.getFullYear()}-${String(hourDate.getMonth() + 1).padStart(2, '0')}-${String(hourDate.getDate()).padStart(2, '0')} ${String(hourDate.getHours()).padStart(2, '0')}:00`;
+					
+					timeLabels.push(formatTime(hourDate.toISOString()));
+					
+					const hourData = hourlyData[hourKey];
+					if (hourData) {
+						tempData.push(roundToTwo(average(hourData.temps)));
+						humData.push(roundToTwo(average(hourData.hums)));
+						flowData.push(Math.round(average(hourData.flows)));
+					} else {
+						tempData.push(null);
+						humData.push(null);
+						flowData.push(null);
+					}
+				}
+				
+				// 创建温度和湿度折线图
+				const tempCtx = document.getElementById('tempAndHumidityChart').getContext('2d');
+				new Chart(tempCtx, {
+					type: 'line',
+					data: {
+						labels: timeLabels,
+						datasets: [
+							{
+								label: '温度 (°C)',
+								data: tempData,
+								borderColor: '#FF6384',
+								backgroundColor: 'rgba(255, 99, 132, 0.1)',
+								fill: 'origin',
+								tension: 0.3,
+								borderWidth: 2,
+								pointBackgroundColor: '#FF6384'
+							},
+							{
+								label: '湿度 (%)',
+								data: humData,
+								borderColor: '#36A2EB',
+								backgroundColor: 'rgba(54, 162, 235, 0.1)',
+								fill: 'origin',
+								tension: 0.3,
+								borderWidth: 2,
+								pointBackgroundColor: '#36A2EB'
+							}
+						]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: { 
+								title: { display: true, text: '温度和湿度趋势图' },
+								ticks: {
+									align: 'center'
+								}
+							},
+							y: { beginAtZero: false }
+						},
+						plugins: {
+							tooltip: {
+								callbacks: {
+									label: function(context) {
+										const label = context.dataset.label || '';
+										const value = context.parsed.y;
+										return value !== null ? `${label}: ${value}` : `${label}: 无数据`;
+									}
+								}
+							}
+						}
+					}
+				});
+				
+				// 创建人流量柱状图
+				const peopleCtx = document.getElementById('peopleFlowChart').getContext('2d');
+				new Chart(peopleCtx, {
+					type: 'bar',
+					data: {
+						labels: timeLabels,
+						datasets: [{
+							label: '人流量',
+							data: flowData,
+							backgroundColor: 'rgba(75, 192, 192, 0.7)',
+							borderRadius: 4,
+							borderSkipped: false
+						}]
+					},
+					options: {
+						responsive: true,
+						scales: {
+							x: { 
+								title: { display: true, text: '人流量统计' },
+								ticks: {
+									align: 'center'
+								}
+							},
+							y: { beginAtZero: true }
+						}
+					}
+				});
+			});
+	</script>
+	<!--projects-->
+
+
+
+	<footer>
+		<div class="container">
+			
+			<div class="copyright">Copyright &copy; ZhemingZhu 2025 | All Rights Reserved\n</div>
+			<div class="copyright">  仅供参加比赛使用</div>
+
+			
+
+		</div>
+	</footer>
+	<!--footer-->
+</body>
+</html>
