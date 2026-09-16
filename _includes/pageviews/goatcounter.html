@@ -1,12 +1,18 @@
-<!-- 不蒜子浏览量（覆盖主题自带的 GoatCounter 脚本，免费无广告） -->
+<!-- 不蒜子浏览量（免费无广告）https://busuanzi.ibruce.info -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const pv = document.getElementById('pageviews');
 
     if (pv !== null) {
+      // 不蒜子会自动填充 id 为 busuanzi_value_page_pv 的元素（页面级浏览数）
+      const holder = document.createElement('span');
+      holder.id = 'busuanzi_value_page_pv';
+      holder.style.display = 'none';
+      document.body.appendChild(holder);
+
       const update = () => {
-        const n = String(window.busuanzi && window.busuanzi.page_pv ? window.busuanzi.page_pv : '');
-        const digits = n.replace(/\D/g, '');
+        const digits = holder.innerText.replace(/\D/g, '');
         if (digits && digits !== '0') {
           pv.innerText = new Intl.NumberFormat().format(Number(digits));
           return true;
@@ -19,8 +25,8 @@
           if (update()) {
             clearInterval(iv);
           }
-        }, 300);
-        setTimeout(() => clearInterval(iv), 10000);
+        }, 400);
+        setTimeout(() => clearInterval(iv), 15000);
       }
     }
   });
