@@ -1,33 +1,44 @@
 <!-- 不蒜子浏览量（免费无广告）https://busuanzi.ibruce.info -->
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const pv = document.getElementById('pageviews');
-
-    if (pv !== null) {
-      // 不蒜子会自动填充 id 为 busuanzi_value_page_pv 的元素（页面级浏览数）
-      const holder = document.createElement('span');
-      holder.id = 'busuanzi_value_page_pv';
-      holder.style.display = 'none';
-      document.body.appendChild(holder);
-
-      const update = () => {
-        const digits = holder.innerText.replace(/\D/g, '');
-        if (digits && digits !== '0') {
-          pv.innerText = new Intl.NumberFormat().format(Number(digits));
-          return true;
-        }
+  (function () {
+    // 统计脚本位于 <head>，执行时文章正文尚未解析，
+    // 因此用轮询等待「浏览量」元素出现后再填充数据。
+    const tick = () => {
+      const pv = document.getElementById('pageviews');
+      if (!pv) {
         return false;
-      };
-
-      if (!update()) {
-        const iv = setInterval(() => {
-          if (update()) {
-            clearInterval(iv);
-          }
-        }, 400);
-        setTimeout(() => clearInterval(iv), 15000);
       }
+      let holder = document.getElementById('busuanzi_value_page_pv');
+      if (!holder) {
+        holder = document.createElement('span');
+        holder.id = 'busuanzi_value_page_pv';
+        holder.style.display = 'none';
+        document.body.appendChild(holder);
+      }
+      // 不蒜子会自动填充 busuanzi_value_page_pv（页面级浏览数）
+      const digits = holder.innerText.replace(/\D/g, '');
+      if (digits && digits !== '0') {
+        pv.innerText = new Intl.NumberFormat().format(Number(digits));
+        return true;
+      }
+      return false;
+    };
+
+    if (!tick()) {
+      const iv = setInterval(() => {
+        if (tick()) {
+          clearInterval(iv);
+        }
+      }, 400);
+      // 兜底：8 秒内拿不到数据就停转圈，显示占位符
+      setTimeout(() => {
+        clearInterval(iv);
+        const pv = document.getElementById('pageviews');
+        if (pv && !pv.innerText.trim()) {
+          pv.innerText = '—';
+        }
+      }, 8000);
     }
-  });
+  })();
 </script>
