@@ -16,7 +16,7 @@ timezone: Asia/Shanghai
 
 title: Zheming的小站 # the main title
 
-tagline: 爱折腾的华工大一新生 · 信息学竞赛选手 · 最佩服牛顿与爱因斯坦 ⚛️ # it will display as the subtitle
+tagline: 爱折腾的华工大一新生 · 喜欢数学物理建筑学 · 最佩服牛顿与爱因斯坦  # it will display as the subtitle
 
 description: >- # used by seo meta and the atom feed
   Zheming（朱柘名）的个人主页：华南理工大学百步梯创新学院新生，信息学竞赛选手，记录技术学习、学术思考与生活点滴。
@@ -110,7 +110,7 @@ toc: true
 actions:
   # Display "Edit this post" action on each post page to encourage contributions.
   edit_post:
-    enabled: true # set to true to display the "Edit this post" action.
+    enabled: false # set to true to display the "Edit this post" action.
     url: "https://github.com/ZhuZheming001/zhuzheming001.github.io" # repository base URL, e.g. https://github.com/cotes2020/jekyll-theme-chirpy/edit/master
     # Use dynamic or static URL for the edit link.
     # If `static_url` is false, the post's path will be appended to the `url` above as the final edit link.
