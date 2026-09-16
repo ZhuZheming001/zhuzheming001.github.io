@@ -1,0 +1,27 @@
+<!-- 不蒜子浏览量（覆盖主题自带的 GoatCounter 脚本，免费无广告） -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const pv = document.getElementById('pageviews');
+
+    if (pv !== null) {
+      const update = () => {
+        const n = String(window.busuanzi && window.busuanzi.page_pv ? window.busuanzi.page_pv : '');
+        const digits = n.replace(/\D/g, '');
+        if (digits && digits !== '0') {
+          pv.innerText = new Intl.NumberFormat().format(Number(digits));
+          return true;
+        }
+        return false;
+      };
+
+      if (!update()) {
+        const iv = setInterval(() => {
+          if (update()) {
+            clearInterval(iv);
+          }
+        }, 300);
+        setTimeout(() => clearInterval(iv), 10000);
+      }
+    }
+  });
+</script>
