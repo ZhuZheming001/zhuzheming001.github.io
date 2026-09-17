@@ -2,49 +2,19 @@
 #  Icons from <https://fontawesome.com/>
 
 platforms:
-  - type: Twitter
-    icon: "fa-brands fa-square-x-twitter"
-    link: "https://twitter.com/intent/tweet?text=TITLE&url=URL"
+  # 微信：点击弹出二维码，微信扫一扫即可分享（特殊类型，需配合 post-sharing.html）
+  - type: 微信
+    icon: "fa-brands fa-weixin"
 
-  - type: Facebook
-    icon: "fab fa-facebook-square"
-    link: "https://www.facebook.com/sharer/sharer.php?title=TITLE&u=URL"
+  - type: 微博
+    icon: "fa-brands fa-weibo"
+    link: "https://service.weibo.com/share/share.php?title=TITLE&url=URL"
 
-  - type: Telegram
-    icon: "fab fa-telegram"
-    link: "https://t.me/share/url?url=URL&text=TITLE"
+  - type: QQ
+    icon: "fa-brands fa-qq"
+    link: "https://connect.qq.com/widget/shareqq/index.html?url=URL&title=TITLE"
 
-  # Uncomment below if you need to.
-  #
-  # - type: Linkedin
-  #   icon: "fab fa-linkedin"
-  #   link: "https://www.linkedin.com/feed/?shareActive=true&shareUrl=URL"
-  #
-  # - type: Weibo
-  #   icon: "fab fa-weibo"
-  #   link: "https://service.weibo.com/share/share.php?title=TITLE&url=URL"
-  #
-  # - type: Mastodon
-  #   icon: "fa-brands fa-mastodon"
-  #   # See: https://github.com/justinribeiro/share-to-mastodon#properties
-  #   instances:
-  #     - label: mastodon.social
-  #       link: "https://mastodon.social/"
-  #     - label: mastodon.online
-  #       link: "https://mastodon.online/"
-  #     - label: fosstodon.org
-  #       link: "https://fosstodon.org/"
-  #     - label: photog.social
-  #       link: "https://photog.social/"
-  #
-  # - type: Bluesky
-  #   icon: "fa-brands fa-bluesky"
-  #   link: "https://bsky.app/intent/compose?text=TITLE%20URL"
-  #
-  # - type: Reddit
-  #   icon: "fa-brands fa-square-reddit"
-  #   link: "https://www.reddit.com/submit?url=URL&title=TITLE"
-  #
-  # - type: Threads
-  #   icon: "fa-brands fa-square-threads"
-  #   link: "https://www.threads.net/intent/post?text=TITLE%20URL"
+  # B站没有网页版分享接口，按钮默认指向 B 站首页；有个人空间地址后把下面 link 换掉即可
+  - type: Bilibili
+    icon: "fa-brands fa-bilibili"
+    link: "https://www.bilibili.com"

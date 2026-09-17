@@ -11,10 +11,14 @@
   icon: "fas fa-phone"
   url: "tel:+8618302065361"
   noblank: true
-
-- type: rss
-  icon: "fas fa-rss"
+  
+— type: bilibili
+  icon: "byPrefixAndName.fab['bilibili']"
+  url: "https://space.bilibili.com/1533213437?spm_id_from=333.1007.0.0"
   noblank: true
+#- type: rss
+#  icon: "fas fa-rss"
+#  noblank: true
 # Uncomment and complete the url below to enable more contact options
 #
 # - type: mastodon
