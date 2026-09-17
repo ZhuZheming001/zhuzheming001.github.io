@@ -1,44 +1,25 @@
 <!-- 不蒜子浏览量（免费无广告）https://busuanzi.ibruce.info -->
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <script>
-  (function () {
-    // 统计脚本位于 <head>，执行时文章正文尚未解析，
-    // 因此用轮询等待「浏览量」元素出现后再填充数据。
-    const tick = () => {
-      const pv = document.getElementById('pageviews');
-      if (!pv) {
-        return false;
-      }
-      let holder = document.getElementById('busuanzi_value_page_pv');
-      if (!holder) {
-        holder = document.createElement('span');
-        holder.id = 'busuanzi_value_page_pv';
-        holder.style.display = 'none';
-        document.body.appendChild(holder);
-      }
-      // 不蒜子会自动填充 busuanzi_value_page_pv（页面级浏览数）
-      const digits = holder.innerText.replace(/\D/g, '');
+  document.addEventListener('DOMContentLoaded', function () {
+    const pv = document.getElementById('pageviews');
+    if (!pv) { return; }
+    let hasValue = false;
+    const apply = function (text) { hasValue = true; pv.innerText = text; };
+    /* 兜底：无论不蒜子数据是否到达，10 秒后都停止转圈（没数据显示占位符） */
+    setTimeout(function () {
+      if (!hasValue && !pv.innerText.trim()) { pv.innerText = '—'; }
+    }, 10000);
+    const tick = function () {
+      const holder = document.getElementById('busuanzi_value_page_pv');
+      if (!holder) { return false; }
+      const digits = (holder.innerText || '').replace(/\D/g, '');
       if (digits && digits !== '0') {
-        pv.innerText = new Intl.NumberFormat().format(Number(digits));
+        apply(new Intl.NumberFormat().format(Number(digits)));
         return true;
       }
       return false;
     };
-
-    if (!tick()) {
-      const iv = setInterval(() => {
-        if (tick()) {
-          clearInterval(iv);
-        }
-      }, 400);
-      // 兜底：8 秒内拿不到数据就停转圈，显示占位符
-      setTimeout(() => {
-        clearInterval(iv);
-        const pv = document.getElementById('pageviews');
-        if (pv && !pv.innerText.trim()) {
-          pv.innerText = '—';
-        }
-      }, 8000);
-    }
-  })();
+    if (!tick()) { setInterval(tick, 500); }
+  });
 </script>

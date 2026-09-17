@@ -2,10 +2,6 @@
 #  Icons from <https://fontawesome.com/>
 
 platforms:
-  # 微信：点击弹出二维码，微信扫一扫即可分享（特殊类型，需配合 post-sharing.html）
-  - type: 微信
-    icon: "fa-brands fa-weixin"
-
   - type: 微博
     icon: "fa-brands fa-weibo"
     link: "https://service.weibo.com/share/share.php?title=TITLE&url=URL"
@@ -13,8 +9,3 @@ platforms:
   - type: QQ
     icon: "fa-brands fa-qq"
     link: "https://connect.qq.com/widget/shareqq/index.html?url=URL&title=TITLE"
-
-  # B站没有网页版分享接口，按钮默认指向 B 站首页；有个人空间地址后把下面 link 换掉即可
-  - type: Bilibili
-    icon: "fa-brands fa-bilibili"
-    link: "https://www.bilibili.com"
