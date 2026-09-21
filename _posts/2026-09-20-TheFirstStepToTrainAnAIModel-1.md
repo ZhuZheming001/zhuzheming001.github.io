@@ -10,6 +10,7 @@ image:/assets/img/20260921-02.png
 >The question of whether a computer can think is no more interesting than the question of whether a submarine can swim.
 >讨论计算机会不会思考，就像讨论潜艇会不会游泳一样，没有多大意义。
 >from: Edsger Dijkstra
+
 ## 正文
 
 近几日，笔者一直在学习AI相关的知识，也萌生了自己训练一个模型的想法，于是自己学着用pytorch实现了几个简单的模型。几个模型都是用来玩 flappy bird 这款经典游戏的。下面是几个模型的大致情况和我的经历及思考。
@@ -28,7 +29,6 @@ image:/assets/img/20260921-02.png
 
 ## 正文主体
 
----
 
 ### 环境搭建
 
