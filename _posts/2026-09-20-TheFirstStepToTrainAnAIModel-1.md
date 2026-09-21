@@ -2,8 +2,8 @@
 title: 第一次训练模型，强化学习VS模仿学习
 date: 2026-09-21 22:50:00 +0800
 categories: [技术, 学习记录]
-tags: [强化学习, 模仿学习，模型训练, AI]
-image:/assets/img/20260921-02.png
+tags: [强化学习, 模仿学习,模型训练, AI]
+image: /assets/img/20260921-02.png
 
 ---
 
