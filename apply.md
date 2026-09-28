@@ -6,7 +6,7 @@ permalink: /apply/
 
 <div class="container" style="max-width: 520px">
   <h2 class="mb-1">申请私密空间账号</h2>
-  <p class="text-muted mb-4">填写信息提交申请，<strong>站长审核通过后</strong>账号方可使用。</p>
+  <p class="text-muted mb-4">填写信息提交申请，<strong>审核通过后</strong>账号方可使用。</p>
 
   <form id="applyForm" onsubmit="return false">
     <div class="mb-3">
@@ -35,10 +35,10 @@ permalink: /apply/
   <div id="f-msg" class="text-danger mt-3"></div>
 
   <div id="f-result" class="d-none mt-4">
-    <div class="alert alert-success">✅ 申请已加密生成，别人无法查看。请复制下方密文发给站长审核：</div>
+    <div class="alert alert-success">✅ 申请已加密生成，别人无法查看。请复制下方密文发给 Zheming 审核：</div>
     <textarea id="f-cipher" class="form-control" rows="4" readonly></textarea>
     <button id="f-copy" class="btn btn-outline-primary mt-2">复制密文</button>
-    <p class="text-muted small mt-3">站长微信：联系朱柘名本人获取最新联系方式。审核通过后，用你的账号和密码访问
+    <p class="text-muted small mt-3">审核通过后，用你的账号和密码访问
       <a href="/private/">私密空间</a>。</p>
   </div>
 </div>
@@ -124,7 +124,7 @@ permalink: /apply/
         passEl.value = "";
         pass2El.value = "";
       } catch (e) {
-        msgEl.textContent = "加密失败，请重试或联系站长";
+        msgEl.textContent = "加密失败，请重试";
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = "生成申请";

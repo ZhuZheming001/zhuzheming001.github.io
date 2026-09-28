@@ -120,7 +120,7 @@ ACCOUNTS_FILE = os.path.join(ROOT, "accounts.json")
 def load_accounts():
     """从 accounts.json 读取账号库（user/pass/name/phone）"""
     if not os.path.exists(ACCOUNTS_FILE):
-        print(f"❌ 缺少 {ACCOUNTS_FILE}，请先创建账号库（含站长账号）")
+        print(f"❌ 缺少 {ACCOUNTS_FILE}，请先创建账号库（含管理员账号）")
         sys.exit(1)
     accounts = json.load(open(ACCOUNTS_FILE, encoding="utf-8"))
     accounts = [

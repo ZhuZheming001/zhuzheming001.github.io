@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-audit_apply.py — 站长审核申请（解密申请者发来的 RSA 密文）
+audit_apply.py — 审核申请（解密申请者发来的 RSA 密文）
 
 用法:
     python3 scripts/audit_apply.py "<申请密文>"      # 直接传密文
@@ -12,7 +12,7 @@ audit_apply.py — 站长审核申请（解密申请者发来的 RSA 密文）
     3. 提示重新运行 encrypt_private.py 加密并推送，账号即生效
 
 说明:
-    私钥在 scripts/keys/private_key.pem，仅站长本地持有，永不提交。
+    私钥在 scripts/keys/private_key.pem，仅本地持有，永不提交。
 """
 import os
 import sys
