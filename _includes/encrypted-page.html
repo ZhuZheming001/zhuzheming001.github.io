@@ -73,12 +73,32 @@
       return bytes;
     }
 
+    // 醒目的错误提示：红色警告条 + 输入框红边框 + 自动清空密码
+    function showError(text, badUser) {
+      msgEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>' + text;
+      msgEl.classList.add("alert", "alert-danger", "px-3", "py-2");
+      passEl.classList.add("is-invalid");
+      if (badUser) {
+        userEl.classList.add("is-invalid");
+      }
+      passEl.value = "";
+    }
+
+    function clearError() {
+      msgEl.textContent = "";
+      msgEl.classList.remove("alert", "alert-danger", "px-3", "py-2");
+      userEl.classList.remove("is-invalid");
+      passEl.classList.remove("is-invalid");
+    }
+
     async function unlockWith(user, password, silent) {
       if (!user || !password) {
-        if (!silent) msgEl.textContent = "请输入账号和密码";
+        if (!silent) {
+          showError("请输入账号和密码", true);
+        }
         return false;
       }
-      if (!silent) msgEl.textContent = "";
+      if (!silent) clearError();
       try {
         var raw = dataEl.textContent.trim();
         var payload = JSON.parse(atob(raw));
@@ -86,7 +106,9 @@
         // 信封解密：先看该账号有没有密钥信封
         var wrap = payload.wraps[user];
         if (!wrap) {
-          if (!silent) msgEl.textContent = "账号不存在或未通过审核";
+          if (!silent) {
+            showError("账号不存在或未通过审核", true);
+          }
           return false;
         }
         var salt = b64ToBytes(payload.s);
@@ -122,7 +144,9 @@
         setAuth(user, password);
         return true;
       } catch (e) {
-        if (!silent) msgEl.textContent = "账号或密码错误";
+        if (!silent) {
+          showError("账号或密码错误", false);
+        }
         return false;
       }
     }
