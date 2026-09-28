@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-encrypt_private.py — 把 _private/ 目录里的私密文章合并加密，生成私密空间页面
+encrypt_private.py — 私密空间加密脚本（列表页 + 每篇文章独立页）
 
 用法:
-    python3 scripts/encrypt_private.py            # 交互输入通用密码
-    python3 scripts/encrypt_private.py "密码"     # 或直接传密码
+    python3 scripts/encrypt_private.py                 # 交互输入账号和密码
+    python3 scripts/encrypt_private.py "账号" "密码"    # 或直接传
 
 流程:
-    1. 读取 _private/*.md 全部文章（每篇可有自己的 front matter: title/date）
-    2. 渲染为 HTML 并合并
-    3. 密码经 PBKDF2(200000 次) 派生密钥，AES-256-GCM 加密
-    4. 生成根目录 private.md（front matter 带 ciphertext，正文留空）
+    1. 读取 _private/*.md（排除 README.md），每篇支持 front matter: title/date
+    2. 每篇渲染 HTML → 独立加密 → 生成 private-<slug>.md（/private/<slug>/）
+    3. 生成列表页 private.md（/private/）：标题 + 日期 + 摘要 + 链接，整体加密
 
-前端解密: 浏览器 Web Crypto API（PBKDF2 + AES-GCM），参数与本脚本一致。
+前端解密: 浏览器 Web Crypto（PBKDF2 200000 次 + AES-256-GCM），账号密码格式 "账号:密码"
+会话: 登录列表页成功后写入 sessionStorage，文章页自动复用账号密码解密。
 """
 import os
 import sys
@@ -29,7 +29,6 @@ import markdown
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRIVATE_DIR = os.path.join(ROOT, "_private")
-OUTPUT = os.path.join(ROOT, "private.md")
 
 MD = markdown.Markdown(
     extensions=["tables", "fenced_code", "attr_list", "footnotes"]
@@ -52,23 +51,26 @@ def split_front_matter(text):
 
 
 def render_article(path):
+    """返回 (slug, title, date_str, body_html, summary)"""
     raw = open(path, encoding="utf-8").read()
     fm, body = split_front_matter(raw)
-    title = fm.get("title", os.path.splitext(os.path.basename(path))[0])
+    slug = os.path.splitext(os.path.basename(path))[0]
+    title = fm.get("title", slug)
     date_str = fm.get("date", "")
-    html = f'<h2 class="mt-4">{title}</h2>'
-    if date_str:
-        html += f'<div class="text-muted mb-2">{date_str}</div>'
-    # 每篇单独重置，避免 markdown 状态残留
     MD.reset()
-    html += MD.convert(body)
-    return html
+    body_html = MD.convert(body)
+    # 摘要：去 markdown 符号后截取
+    summary = re.sub(r"[#>*`\[\]!|\-]", "", body)
+    summary = re.sub(r"\s+", " ", summary).strip()
+    if len(summary) > 80:
+        summary = summary[:80] + "…"
+    return slug, title, date_str, body_html, summary
 
 
-def encrypt(password, plaintext):
+def encrypt(credential, plaintext):
     salt = os.urandom(16)
     iv = os.urandom(12)
-    key = PBKDF2(password, salt, 32, count=PBKDF2_ITERATIONS,
+    key = PBKDF2(credential, salt, 32, count=PBKDF2_ITERATIONS,
                  hmac_hash_module=SHA256)
     cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
     ct, tag = cipher.encrypt_and_digest(plaintext.encode("utf-8"))
@@ -81,8 +83,23 @@ def encrypt(password, plaintext):
     return base64.b64encode(json.dumps(payload).encode()).decode()
 
 
+def make_page(title, permalink, cipher_b64):
+    return (
+        "---\n"
+        "layout: page\n"
+        f"title: {title}\n"
+        f"permalink: {permalink}\n"
+        "encrypted: true\n"
+        "ciphertext: |\n"
+        f"  {cipher_b64}\n"
+        "---\n"
+    )
+
+
 def main():
-    password = sys.argv[1] if len(sys.argv) > 1 else None
+    user = sys.argv[1] if len(sys.argv) > 1 else None
+    password = sys.argv[2] if len(sys.argv) > 2 else None
+
     files = [
         f for f in sorted(glob.glob(os.path.join(PRIVATE_DIR, "*.md")))
         if os.path.basename(f).lower() != "readme.md"
@@ -91,31 +108,49 @@ def main():
         print(f"❌ {PRIVATE_DIR}/ 目录下没有 .md 文章，请先放入私密文章")
         sys.exit(1)
 
+    if user is None:
+        user = input("设置账号 [默认 news]: ").strip() or "news"
     if password is None:
-        password = getpass.getpass("输入通用密码: ")
+        password = getpass.getpass("设置密码: ")
     if not password:
         print("❌ 密码不能为空")
         sys.exit(1)
+    credential = f"{user}:{password}"
 
-    html = "\n<hr class=\"my-5\">\n".join(render_article(f) for f in files)
-    cipher_b64 = encrypt(password, html)
+    # 清理旧的独立文章页（防止删除文章后残留）
+    for old in glob.glob(os.path.join(ROOT, "private-*.md")):
+        os.remove(old)
 
-    output = (
-        "---\n"
-        "layout: page\n"
-        "title: 私密空间\n"
-        "permalink: /private/\n"
-        "encrypted: true\n"
-        "ciphertext: |\n"
-        f"  {cipher_b64}\n"
-        "---\n"
-    )
-    with open(OUTPUT, "w", encoding="utf-8") as f:
-        f.write(output)
+    items = []
+    for f in files:
+        slug, title, date_str, body_html, summary = render_article(f)
 
-    print(f"✅ 已加密 {len(files)} 篇文章 → {OUTPUT}")
-    print(f"   页面地址: {ROOT}/private.md (部署后访问 /private/)")
-    print("   ⚠️ 请务必记好密码，忘记后无法找回（只能重新加密）")
+        # 每篇文章独立加密页
+        permalink = f"/private/{slug}/"
+        cipher = encrypt(credential, body_html)
+        with open(os.path.join(ROOT, f"private-{slug}.md"), "w",
+                  encoding="utf-8") as fh:
+            fh.write(make_page(title, permalink, cipher))
+
+        # 列表项
+        date_html = f'<div class="text-muted small mb-1">{date_str}</div>' if date_str else ""
+        items.append(
+            f'<article class="mb-4">'
+            f'<h2 class="h4 mb-1"><a href="{permalink}">{title}</a></h2>'
+            f"{date_html}"
+            f'<p class="mb-0">{summary}</p>'
+            f"</article>"
+        )
+        print(f"  📄 {slug}.md → /private/{slug}/")
+
+    list_html = "\n".join(items)
+    cipher = encrypt(credential, list_html)
+    with open(os.path.join(ROOT, "private.md"), "w", encoding="utf-8") as fh:
+        fh.write(make_page("私密空间", "/private/", cipher))
+
+    print(f"✅ 已加密 {len(files)} 篇文章")
+    print(f"   列表页: /private/  （账号: {user}）")
+    print("   ⚠️ 请务必记好账号和密码，忘记后无法找回（只能重新加密）")
 
 
 if __name__ == "__main__":

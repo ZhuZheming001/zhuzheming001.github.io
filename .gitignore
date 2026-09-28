@@ -30,3 +30,7 @@ assets/js/dist
 *~
 .DS_Store
 Thumbs.db
+
+# 私密文章明文永不提交（只提交加密后的 private.md）
+_private/*.md
+!_private/README.md

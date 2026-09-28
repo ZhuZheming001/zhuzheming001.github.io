@@ -1,19 +1,28 @@
 {%- comment -%}
   私密页面解密交互（配合 _layouts/page.html 的 encrypted 分支使用）
   加密侧: scripts/encrypt_private.py（PBKDF2 200000 次 + AES-256-GCM）
+  凭据格式: "账号:密码"；登录成功后写入 sessionStorage，文章页自动复用
 {%- endcomment -%}
 
 <div id="encrypted-lock" class="text-center py-5">
-  <h2 class="mb-3"><i class="fa-solid fa-lock me-2"></i>此页面已加密</h2>
-  <p class="text-muted mb-3">请输入密码查看内容</p>
+  <h2 class="mb-3"><i class="fa-solid fa-lock me-2"></i>私密空间</h2>
+  <p class="text-muted mb-3">请输入账号和密码查看内容</p>
   <div class="d-flex justify-content-center gap-2 flex-wrap">
+    <input
+      type="text"
+      id="encrypted-user"
+      class="form-control"
+      placeholder="账号"
+      autocomplete="off"
+      style="max-width: 200px"
+    />
     <input
       type="password"
       id="encrypted-pass"
       class="form-control"
       placeholder="密码"
       autocomplete="off"
-      style="max-width: 240px"
+      style="max-width: 200px"
     />
     <button id="encrypted-btn" class="btn btn-primary">解锁</button>
   </div>
@@ -26,12 +35,29 @@
     var dataEl = document.getElementById("encrypted-data");
     var lockEl = document.getElementById("encrypted-lock");
     var contentEl = document.getElementById("encrypted-content");
+    var userEl = document.getElementById("encrypted-user");
     var passEl = document.getElementById("encrypted-pass");
     var btnEl = document.getElementById("encrypted-btn");
     var msgEl = document.getElementById("encrypted-msg");
 
-    if (!dataEl || !lockEl || !contentEl || !passEl || !btnEl || !msgEl) {
+    if (!dataEl || !lockEl || !contentEl || !userEl || !passEl || !btnEl || !msgEl) {
       return;
+    }
+
+    var AUTH_KEY = "zzm_priv_auth";
+
+    function getAuth() {
+      try {
+        return JSON.parse(sessionStorage.getItem(AUTH_KEY));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function setAuth(user, password) {
+      try {
+        sessionStorage.setItem(AUTH_KEY, JSON.stringify({ u: user, p: password }));
+      } catch (e) {}
     }
 
     function b64ToBytes(b64) {
@@ -43,15 +69,12 @@
       return bytes;
     }
 
-    async function unlock() {
-      var password = passEl.value;
-      if (!password) {
-        msgEl.textContent = "请输入密码";
-        return;
+    async function unlockWith(user, password, silent) {
+      if (!user || !password) {
+        if (!silent) msgEl.textContent = "请输入账号和密码";
+        return false;
       }
-      msgEl.textContent = "";
-      btnEl.disabled = true;
-      btnEl.textContent = "解密中…";
+      if (!silent) msgEl.textContent = "";
       try {
         var raw = dataEl.textContent.trim();
         var payload = JSON.parse(atob(raw));
@@ -61,7 +84,7 @@
 
         var enc = new TextEncoder();
         var keyMaterial = await crypto.subtle.importKey(
-          "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]
+          "raw", enc.encode(user + ":" + password), "PBKDF2", false, ["deriveKey"]
         );
         var key = await crypto.subtle.deriveKey(
           { name: "PBKDF2", salt: salt, iterations: 200000, hash: "SHA-256" },
@@ -76,19 +99,31 @@
         var html = new TextDecoder().decode(plain);
         lockEl.style.display = "none";
         contentEl.innerHTML = html;
+        setAuth(user, password);
+        return true;
       } catch (e) {
-        msgEl.textContent = "密码错误或内容已损坏";
-      } finally {
-        btnEl.disabled = false;
-        btnEl.textContent = "解锁";
+        if (!silent) msgEl.textContent = "账号或密码错误";
+        return false;
       }
     }
 
-    btnEl.addEventListener("click", unlock);
-    passEl.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        unlock();
-      }
+    function unlockByForm() {
+      unlockWith(userEl.value.trim(), passEl.value, false);
+    }
+
+    btnEl.addEventListener("click", unlockByForm);
+    [userEl, passEl].forEach(function (el) {
+      el.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          unlockByForm();
+        }
+      });
     });
+
+    // 会话保持：同一标签页内登录过一次后，直接访问文章页自动解锁
+    var auth = getAuth();
+    if (auth && auth.u && auth.p) {
+      unlockWith(auth.u, auth.p, true);
+    }
   })();
 </script>
