@@ -47,7 +47,7 @@
       return;
     }
 
-    // 会话存储 key
+    /* 会话存储 key */
     var AUTH_KEY = "zzm_priv_auth";
 
     function getAuth() {
@@ -73,7 +73,7 @@
       return bytes;
     }
 
-    // 醒目的错误提示：红色警告条 + 输入框红边框 + 自动清空密码
+    /* 醒目的错误提示：红色警告条 + 输入框红边框 + 自动清空密码 */
     function showError(text, badUser) {
       msgEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>' + text;
       msgEl.classList.add("alert", "alert-danger", "px-3", "py-2");
@@ -103,7 +103,7 @@
         var raw = dataEl.textContent.trim();
         var payload = JSON.parse(atob(raw));
 
-        // 信封解密：先看该账号有没有密钥信封
+        /* 信封解密：先看该账号有没有密钥信封 */
         var wrap = payload.wraps[user];
         if (!wrap) {
           if (!silent) {
@@ -116,7 +116,7 @@
         var data = b64ToBytes(payload.c);
 
         var enc = new TextEncoder();
-        // 1) 账号密码派生 KEK
+        /* 1) 账号密码派生 KEK */
         var keyMaterial = await crypto.subtle.importKey(
           "raw", enc.encode(user + ":" + password), "PBKDF2", false, ["deriveKey"]
         );
@@ -127,14 +127,14 @@
           false,
           ["decrypt"]
         );
-        // 2) 解开信封得到内容密钥 dek
+        /* 2) 解开信封得到内容密钥 dek */
         var dekRaw = await crypto.subtle.decrypt(
           { name: "AES-GCM", iv: b64ToBytes(wrap.i) }, kek, b64ToBytes(wrap.k)
         );
         var dek = await crypto.subtle.importKey(
           "raw", dekRaw, "AES-GCM", false, ["decrypt"]
         );
-        // 3) 用 dek 解密内容
+        /* 3) 用 dek 解密内容 */
         var plain = await crypto.subtle.decrypt(
           { name: "AES-GCM", iv: iv }, dek, data
         );
@@ -164,7 +164,7 @@
       });
     });
 
-    // 会话保持：同一标签页内登录过一次后，直接访问文章页自动解锁
+    /* 会话保持：同一标签页内登录过一次后，直接访问文章页自动解锁 */
     var auth = getAuth();
     if (auth && auth.u && auth.p) {
       unlockWith(auth.u, auth.p, true);
