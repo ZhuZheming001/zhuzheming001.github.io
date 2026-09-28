@@ -120,7 +120,7 @@ permalink: /apply/
         cipherEl.value = cipher;
         resultEl.classList.remove("d-none");
         msgEl.textContent = "";
-        // 清空敏感输入，防止浏览器或剪贴板残留
+        /* 清空敏感输入，防止浏览器或剪贴板残留 */
         passEl.value = "";
         pass2El.value = "";
       } catch (e) {
