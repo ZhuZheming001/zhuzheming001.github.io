@@ -83,7 +83,10 @@ def encrypt(password, plaintext):
 
 def main():
     password = sys.argv[1] if len(sys.argv) > 1 else None
-    files = sorted(glob.glob(os.path.join(PRIVATE_DIR, "*.md")))
+    files = [
+        f for f in sorted(glob.glob(os.path.join(PRIVATE_DIR, "*.md")))
+        if os.path.basename(f).lower() != "readme.md"
+    ]
     if not files:
         print(f"❌ {PRIVATE_DIR}/ 目录下没有 .md 文章，请先放入私密文章")
         sys.exit(1)
