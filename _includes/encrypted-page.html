@@ -26,6 +26,9 @@
     />
     <button id="encrypted-btn" class="btn btn-primary">解锁</button>
   </div>
+  <div class="mt-3">
+    <a href="/apply/" class="small text-muted">还没有账号？申请一个 →</a>
+  </div>
   <div id="encrypted-msg" class="text-danger mt-3"></div>
 </div>
 <div id="encrypted-content"></div>
@@ -44,6 +47,7 @@
       return;
     }
 
+    // 会话存储 key
     var AUTH_KEY = "zzm_priv_auth";
 
     function getAuth() {
@@ -78,23 +82,39 @@
       try {
         var raw = dataEl.textContent.trim();
         var payload = JSON.parse(atob(raw));
+
+        // 信封解密：先看该账号有没有密钥信封
+        var wrap = payload.wraps[user];
+        if (!wrap) {
+          if (!silent) msgEl.textContent = "账号不存在或未通过审核";
+          return false;
+        }
         var salt = b64ToBytes(payload.s);
         var iv = b64ToBytes(payload.i);
         var data = b64ToBytes(payload.c);
 
         var enc = new TextEncoder();
+        // 1) 账号密码派生 KEK
         var keyMaterial = await crypto.subtle.importKey(
           "raw", enc.encode(user + ":" + password), "PBKDF2", false, ["deriveKey"]
         );
-        var key = await crypto.subtle.deriveKey(
+        var kek = await crypto.subtle.deriveKey(
           { name: "PBKDF2", salt: salt, iterations: 200000, hash: "SHA-256" },
           keyMaterial,
           { name: "AES-GCM", length: 256 },
           false,
           ["decrypt"]
         );
+        // 2) 解开信封得到内容密钥 dek
+        var dekRaw = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: b64ToBytes(wrap.i) }, kek, b64ToBytes(wrap.k)
+        );
+        var dek = await crypto.subtle.importKey(
+          "raw", dekRaw, "AES-GCM", false, ["decrypt"]
+        );
+        // 3) 用 dek 解密内容
         var plain = await crypto.subtle.decrypt(
-          { name: "AES-GCM", iv: iv }, key, data
+          { name: "AES-GCM", iv: iv }, dek, data
         );
         var html = new TextDecoder().decode(plain);
         lockEl.style.display = "none";

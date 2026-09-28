@@ -34,3 +34,7 @@ Thumbs.db
 # 私密文章明文永不提交（只提交加密后的 private.md）
 _private/*.md
 !_private/README.md
+
+# 私密账号与审核密钥（仅站长本地，永不推送）
+scripts/keys/
+accounts.json

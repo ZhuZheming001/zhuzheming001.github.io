@@ -67,33 +67,71 @@ def render_article(path):
     return slug, title, date_str, body_html, summary
 
 
-def encrypt(credential, plaintext):
+def encrypt(accounts, plaintext):
+    """信封加密：内容密钥 dek 随机生成；每个账号用自己密码派生的 KEK 包裹 dek"""
+    dek = os.urandom(32)
     salt = os.urandom(16)
     iv = os.urandom(12)
-    key = PBKDF2(credential, salt, 32, count=PBKDF2_ITERATIONS,
-                 hmac_hash_module=SHA256)
-    cipher = AES.new(key, AES.MODE_GCM, nonce=iv)
+    cipher = AES.new(dek, AES.MODE_GCM, nonce=iv)
     ct, tag = cipher.encrypt_and_digest(plaintext.encode("utf-8"))
+
+    wraps = {}
+    for acc in accounts:
+        user = acc["user"]
+        password = acc["pass"]
+        kek = PBKDF2(f"{user}:{password}", salt, 32,
+                     count=PBKDF2_ITERATIONS, hmac_hash_module=SHA256)
+        wiv = os.urandom(12)
+        wc = AES.new(kek, AES.MODE_GCM, nonce=wiv)
+        wct, wtag = wc.encrypt_and_digest(dek)
+        wraps[user] = {
+            "i": base64.b64encode(wiv).decode(),
+            "k": base64.b64encode(wct + wtag).decode(),
+        }
+
     payload = {
         "s": base64.b64encode(salt).decode(),
         "i": base64.b64encode(iv).decode(),
         "c": base64.b64encode(ct + tag).decode(),
+        "wraps": wraps,
     }
     # 整体再 base64 一层，避免任何字符与 front matter / Liquid 冲突
     return base64.b64encode(json.dumps(payload).encode()).decode()
 
 
 def make_page(title, permalink, cipher_b64):
-    return (
-        "---\n"
-        "layout: page\n"
-        f"title: {title}\n"
-        f"permalink: {permalink}\n"
-        "encrypted: true\n"
-        "ciphertext: |\n"
-        f"  {cipher_b64}\n"
-        "---\n"
-    )
+    lines = [
+        "---",
+        "layout: page",
+        f"title: {title}",
+        f"permalink: {permalink}",
+        "encrypted: true",
+        "ciphertext: |",
+        f"  {cipher_b64}",
+        "---",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+ACCOUNTS_FILE = os.path.join(ROOT, "accounts.json")
+
+
+def load_accounts():
+    """从 accounts.json 读取账号库（user/pass/name/phone）"""
+    if not os.path.exists(ACCOUNTS_FILE):
+        print(f"❌ 缺少 {ACCOUNTS_FILE}，请先创建账号库（含站长账号）")
+        sys.exit(1)
+    accounts = json.load(open(ACCOUNTS_FILE, encoding="utf-8"))
+    accounts = [
+        {"user": a.get("user", "").strip(), "pass": a.get("pass", "")}
+        for a in accounts
+        if a.get("user", "").strip() and a.get("pass")
+    ]
+    if not accounts:
+        print("❌ accounts.json 里没有可用账号（需要 user + pass）")
+        sys.exit(1)
+    return accounts
 
 
 def main():
@@ -115,7 +153,10 @@ def main():
     if not password:
         print("❌ 密码不能为空")
         sys.exit(1)
-    credential = f"{user}:{password}"
+    accounts = load_accounts()
+    if user not in [a["user"] for a in accounts]:
+        print(f"❌ 账号 {user} 不在 accounts.json 授权名单里")
+        sys.exit(1)
 
     # 清理旧的独立文章页（防止删除文章后残留）
     for old in glob.glob(os.path.join(ROOT, "private-*.md")):
@@ -127,7 +168,7 @@ def main():
 
         # 每篇文章独立加密页
         permalink = f"/private/{slug}/"
-        cipher = encrypt(credential, body_html)
+        cipher = encrypt(accounts, body_html)
         with open(os.path.join(ROOT, f"private-{slug}.md"), "w",
                   encoding="utf-8") as fh:
             fh.write(make_page(title, permalink, cipher))
@@ -144,12 +185,12 @@ def main():
         print(f"  📄 {slug}.md → /private/{slug}/")
 
     list_html = "\n".join(items)
-    cipher = encrypt(credential, list_html)
+    cipher = encrypt(accounts, list_html)
     with open(os.path.join(ROOT, "private.md"), "w", encoding="utf-8") as fh:
         fh.write(make_page("私密空间", "/private/", cipher))
 
-    print(f"✅ 已加密 {len(files)} 篇文章")
-    print(f"   列表页: /private/  （账号: {user}）")
+    print(f"✅ 已加密 {len(files)} 篇文章，授权账号 {len(accounts)} 个")
+    print(f"   列表页: /private/  （当前操作账号: {user}）")
     print("   ⚠️ 请务必记好账号和密码，忘记后无法找回（只能重新加密）")
 
 
