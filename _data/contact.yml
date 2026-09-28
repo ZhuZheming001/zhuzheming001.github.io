@@ -17,6 +17,11 @@
   url: "https://space.bilibili.com/1533213437?spm_id_from=333.1007.0.0"
   noblank: true
 
+- type: private
+  icon: "fa-solid fa-lock"
+  url: "/private/"
+  noblank: true
+
 #- type: rss
 #  icon: "fas fa-rss"
 #  noblank: true
